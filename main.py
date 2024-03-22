@@ -18,6 +18,10 @@ class MultiWindowApp(tk.Tk):
         self.main_menu_button_image = itk.PhotoImage(file='./images/main_menu_button.png')
         self.back_button_image = itk.PhotoImage(file='images/back_button.png')
         self.retry_button_image = itk.PhotoImage(file='images/retry_button.png')
+        self.main_menu_bg_image = itk.PhotoImage(file='images/main_menu_bg.png')
+        self.help_bg_image = itk.PhotoImage(file='images/help_bg.png')
+        self.level_bg_image = itk.PhotoImage(file='images/level_bg.png')
+        self.game_over_bg_image = itk.PhotoImage(file='images/game_over_bg.png')
 
         self.main_frame = None
         self.current_window = None
@@ -41,11 +45,7 @@ class MultiWindowApp(tk.Tk):
         self.close_window()
         self.current_window = tk.Toplevel(self)
         self.open_previous_window = self.open_main_menu
-        self.update_window(title='Main Menu')
-
-        # self.bg_image = itk.PhotoImage(file='./images/main_menu_bg.png')
-        # self.bg = tk.Label(self.current_window, image=self.bg_image)
-        # self.bg.place()
+        self.update_window(title='Main Menu', bg_image=self.main_menu_bg_image)
 
         play_button = tk.Button(self.current_window, image=self.play_button_image, command=self.open_level)
         help_button = tk.Button(self.current_window, image=self.help_button_image0, command=self.open_help)
@@ -56,7 +56,7 @@ class MultiWindowApp(tk.Tk):
         self.close_window()
         self.current_window = tk.Toplevel(self)
         self.open_previous_window = self.open_level
-        self.update_window(title='Level')
+        self.update_window(title='Level', bg_image=self.level_bg_image)
 
         help_button = tk.Button(self.current_window, image=self.help_button_image1, command=self.open_help)
         main_menu_button = tk.Button(self.current_window, image=self.main_menu_button_image, command=self.open_main_menu)
@@ -66,7 +66,7 @@ class MultiWindowApp(tk.Tk):
     def open_help(self):
         self.close_window()
         self.current_window = tk.Toplevel(self)
-        self.update_window(title='Documentation')
+        self.update_window(title='Documentation', bg_image=self.help_bg_image)
 
         back_button = tk.Button(self.current_window, image=self.back_button_image, command=self.open_previous_window)
         back_button.place(relx=0.2, rely=0.8, anchor="center")
@@ -75,7 +75,7 @@ class MultiWindowApp(tk.Tk):
         self.close_window()
         self.current_window = tk.Toplevel(self)
         self.open_previous_window = self.open_game_over
-        self.update_window(title='Game Over')
+        self.update_window(title='Game Over', bg_image=self.game_over_bg_image)
 
         retry_button = tk.Button(self.current_window, image=self.retry_button_image, command=self.open_level)
         help_button = tk.Button(self.current_window, image=self.help_button_image0, command=self.open_help)
@@ -87,10 +87,12 @@ class MultiWindowApp(tk.Tk):
             self.current_window.destroy()
             self.current_window = None
 
-    def update_window(self, title):
+    def update_window(self, title, bg_image):
         if self.current_window:
             self.current_window.title(title)
             self.current_window.geometry(WINDOW_GEOMETRY)
+            bg = tk.Label(self.current_window, image=bg_image)
+            bg.place(relwidth=1, relheight=1)
 
 
 if __name__ == '__main__':
