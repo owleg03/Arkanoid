@@ -26,7 +26,6 @@ class MultiWindowApp(tk.Tk):
         self.main_frame = None
         self.current_window = None
         self.open_previous_window = None
-        # self.bg = None
 
         self.create_main_window()
         self.open_main_menu()
