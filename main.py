@@ -1,13 +1,15 @@
+import random
 import tkinter as tk
 from PIL import ImageTk as itk
 
 WIDTH = 720
-HEIGHT = 512 + 50
+HEIGHT = 512
 CANVAS_WIDTH = WIDTH - 80
-CANVAS_HEIGHT = 80
+CANVAS_HEIGHT = 50
 WINDOW_GEOMETRY = f'{WIDTH}x{HEIGHT}+150+150'
 RUNNER_WINDOW_SIZE = '200x50'
 BAR_ARROW_MOVEMENT_INCREMENT = 20
+FONT_LABEL = ('Bungee', 20)
 
 
 class MultiWindowApp(tk.Tk):
@@ -32,7 +34,9 @@ class MultiWindowApp(tk.Tk):
         self.open_previous_window = None
         self.canvas = None
         self.bar = None
-        self.mouse_control_enabled = False;
+        self.mouse_control_enabled = False
+        self.score = 0
+        self.score_label = None
 
         self.create_main_window()
         self.open_main_menu()
@@ -66,15 +70,18 @@ class MultiWindowApp(tk.Tk):
 
         help_button = tk.Button(self.current_window, image=self.help_button_image1, command=self.open_help)
         main_menu_button = tk.Button(self.current_window, image=self.main_menu_button_image, command=self.open_main_menu)
+        self.score_label = tk.Label(self.current_window, text=f'SCORE: {self.score}', fg='white', bg='purple', font=FONT_LABEL)
         help_button.place(relx=0.6, rely=0.9, anchor='center')
         main_menu_button.place(relx=0.85, rely=0.9, anchor='center')
+        self.score_label.place(relx=0.2, rely=0.9, anchor='center')
 
         self.canvas = tk.Canvas(self.current_window, width=CANVAS_WIDTH, height=CANVAS_HEIGHT)
         self.canvas.place(relx=0.5, rely=0.7, anchor='center')
         self.bar = self.canvas.create_image(CANVAS_WIDTH//2, CANVAS_HEIGHT//2, anchor='center', image=self.bar_image)
-        self.current_window.bind('<Left>', self.move_bar_arrows)
-        self.current_window.bind('<Right>', self.move_bar_arrows)
-        self.current_window.bind('<space>', self.toggle_mouse_control)
+        self.current_window.bind('<Left>', self.handle_move_bar_arrows)
+        self.current_window.bind('<Right>', self.handle_move_bar_arrows)
+        self.current_window.bind('<space>', self.handle_toggle_mouse_control)
+        self.current_window.bind('<Escape>', self.handle_open_game_over)
 
     def open_help(self):
         self.close_window()
@@ -92,8 +99,10 @@ class MultiWindowApp(tk.Tk):
 
         retry_button = tk.Button(self.current_window, image=self.retry_button_image, command=self.open_level)
         help_button = tk.Button(self.current_window, image=self.help_button_image0, command=self.open_help)
-        retry_button.place(relx=0.25, rely=0.6, anchor='center')
-        help_button.place(relx=0.25, rely=0.8, anchor='center')
+        retry_button.place(relx=0.3, rely=0.6, anchor='center')
+        help_button.place(relx=0.65, rely=0.6, anchor='center')
+        self.score_label = tk.Label(self.current_window, text=self.score, fg='white', bg='gray', font=FONT_LABEL)
+        self.score_label.place(relx=0.45, rely=0.4, anchor='center')
 
     def close_window(self):
         if self.current_window:
@@ -107,7 +116,7 @@ class MultiWindowApp(tk.Tk):
             bg = tk.Label(self.current_window, image=bg_image)
             bg.place(relwidth=1, relheight=1)
 
-    def move_bar_arrows(self, event):
+    def handle_move_bar_arrows(self, event):
         x = 0
         y = 0
         if event.keysym == 'Left':
@@ -117,18 +126,26 @@ class MultiWindowApp(tk.Tk):
 
         self.canvas.move(self.bar, x, y)
 
-    def move_bar_mouse(self, event):
+        # Mock score logic
+        if random.choice([True, False]):
+            self.score += BAR_ARROW_MOVEMENT_INCREMENT
+            self.score_label.config(text=f'SCORE: {self.score}')
+
+    def handle_move_bar_mouse(self, event):
         x = min(event.x, CANVAS_WIDTH)
         x = max(0, x)
 
-        self.canvas.coords(self.bar, x, 40)
+        self.canvas.coords(self.bar, x, CANVAS_HEIGHT//2)
 
-    def toggle_mouse_control(self, event):
+    def handle_toggle_mouse_control(self, _):
         if not self.mouse_control_enabled:
-            self.current_window.bind('<Motion>', self.move_bar_mouse)
+            self.current_window.bind('<Motion>', self.handle_move_bar_mouse)
         else:
             self.current_window.unbind('<Motion>')
         self.mouse_control_enabled = not self.mouse_control_enabled
+
+    def handle_open_game_over(self, _):
+        self.open_game_over()
 
 
 if __name__ == '__main__':
