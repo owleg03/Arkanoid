@@ -3,8 +3,11 @@ from PIL import ImageTk as itk
 
 WIDTH = 720
 HEIGHT = 512 + 50
-WINDOW_GEOMETRY = f'{WIDTH}x{HEIGHT}+{WIDTH // 2}+{HEIGHT // 2}'
+CANVAS_WIDTH = WIDTH - 80
+CANVAS_HEIGHT = 80
+WINDOW_GEOMETRY = f'{WIDTH}x{HEIGHT}+150+150'
 RUNNER_WINDOW_SIZE = '200x50'
+BAR_ARROW_MOVEMENT_INCREMENT = 20
 
 
 class MultiWindowApp(tk.Tk):
@@ -29,6 +32,7 @@ class MultiWindowApp(tk.Tk):
         self.open_previous_window = None
         self.canvas = None
         self.bar = None
+        self.mouse_control_enabled = False;
 
         self.create_main_window()
         self.open_main_menu()
@@ -51,8 +55,8 @@ class MultiWindowApp(tk.Tk):
 
         play_button = tk.Button(self.current_window, image=self.play_button_image, command=self.open_level)
         help_button = tk.Button(self.current_window, image=self.help_button_image0, command=self.open_help)
-        play_button.place(relx=0.5, rely=0.45, anchor="center")
-        help_button.place(relx=0.5, rely=0.7, anchor="center")
+        play_button.place(relx=0.5, rely=0.45, anchor='center')
+        help_button.place(relx=0.5, rely=0.7, anchor='center')
 
     def open_level(self):
         self.close_window()
@@ -62,14 +66,15 @@ class MultiWindowApp(tk.Tk):
 
         help_button = tk.Button(self.current_window, image=self.help_button_image1, command=self.open_help)
         main_menu_button = tk.Button(self.current_window, image=self.main_menu_button_image, command=self.open_main_menu)
-        help_button.place(relx=0.6, rely=0.9, anchor="center")
-        main_menu_button.place(relx=0.85, rely=0.9, anchor="center")
+        help_button.place(relx=0.6, rely=0.9, anchor='center')
+        main_menu_button.place(relx=0.85, rely=0.9, anchor='center')
 
-        self.canvas = tk.Canvas(self.current_window, width=WIDTH-200, height=HEIGHT-100, bg='white')
-        self.canvas.pack()
-        self.bar = self.canvas.create_image(100, 100, anchor='center', image=self.bar_image)
-        self.current_window.bind("<Left>", self.move_bar)
-        self.current_window.bind("<Right>", self.move_bar)
+        self.canvas = tk.Canvas(self.current_window, width=CANVAS_WIDTH, height=CANVAS_HEIGHT)
+        self.canvas.place(relx=0.5, rely=0.7, anchor='center')
+        self.bar = self.canvas.create_image(CANVAS_WIDTH//2, CANVAS_HEIGHT//2, anchor='center', image=self.bar_image)
+        self.current_window.bind('<Left>', self.move_bar_arrows)
+        self.current_window.bind('<Right>', self.move_bar_arrows)
+        self.current_window.bind('<space>', self.toggle_mouse_control)
 
     def open_help(self):
         self.close_window()
@@ -77,7 +82,7 @@ class MultiWindowApp(tk.Tk):
         self.update_window(title='Documentation', bg_image=self.help_bg_image)
 
         back_button = tk.Button(self.current_window, image=self.back_button_image, command=self.open_previous_window)
-        back_button.place(relx=0.2, rely=0.8, anchor="center")
+        back_button.place(relx=0.2, rely=0.8, anchor='center')
 
     def open_game_over(self):
         self.close_window()
@@ -87,8 +92,8 @@ class MultiWindowApp(tk.Tk):
 
         retry_button = tk.Button(self.current_window, image=self.retry_button_image, command=self.open_level)
         help_button = tk.Button(self.current_window, image=self.help_button_image0, command=self.open_help)
-        retry_button.place(relx=0.25, rely=0.6, anchor="center")
-        help_button.place(relx=0.25, rely=0.8, anchor="center")
+        retry_button.place(relx=0.25, rely=0.6, anchor='center')
+        help_button.place(relx=0.25, rely=0.8, anchor='center')
 
     def close_window(self):
         if self.current_window:
@@ -102,15 +107,28 @@ class MultiWindowApp(tk.Tk):
             bg = tk.Label(self.current_window, image=bg_image)
             bg.place(relwidth=1, relheight=1)
 
-    def move_bar(self, event):
-        x = self.bar.winfo_x()
-        y = self.bar.winfo_y()
+    def move_bar_arrows(self, event):
+        x = 0
+        y = 0
         if event.keysym == 'Left':
-            x = max(20, x - 50)
+            x = -BAR_ARROW_MOVEMENT_INCREMENT
         elif event.keysym == 'Right':
-            x = min(WIDTH, x + 50)
+            x = BAR_ARROW_MOVEMENT_INCREMENT
 
-        self.bar.place(x=x, y=y)
+        self.canvas.move(self.bar, x, y)
+
+    def move_bar_mouse(self, event):
+        x = min(event.x, CANVAS_WIDTH)
+        x = max(0, x)
+
+        self.canvas.coords(self.bar, x, 40)
+
+    def toggle_mouse_control(self, event):
+        if not self.mouse_control_enabled:
+            self.current_window.bind('<Motion>', self.move_bar_mouse)
+        else:
+            self.current_window.unbind('<Motion>')
+        self.mouse_control_enabled = not self.mouse_control_enabled
 
 
 if __name__ == '__main__':
