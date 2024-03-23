@@ -22,10 +22,13 @@ class MultiWindowApp(tk.Tk):
         self.help_bg_image = itk.PhotoImage(file='images/help_bg.png')
         self.level_bg_image = itk.PhotoImage(file='images/level_bg.png')
         self.game_over_bg_image = itk.PhotoImage(file='images/game_over_bg.png')
+        self.bar_image = itk.PhotoImage(file='images/bar_image.png')
 
         self.main_frame = None
         self.current_window = None
         self.open_previous_window = None
+        self.canvas = None
+        self.bar = None
 
         self.create_main_window()
         self.open_main_menu()
@@ -62,6 +65,12 @@ class MultiWindowApp(tk.Tk):
         help_button.place(relx=0.6, rely=0.9, anchor="center")
         main_menu_button.place(relx=0.85, rely=0.9, anchor="center")
 
+        self.canvas = tk.Canvas(self.current_window, width=WIDTH-200, height=HEIGHT-100, bg='white')
+        self.canvas.pack()
+        self.bar = self.canvas.create_image(100, 100, anchor='center', image=self.bar_image)
+        self.current_window.bind("<Left>", self.move_bar)
+        self.current_window.bind("<Right>", self.move_bar)
+
     def open_help(self):
         self.close_window()
         self.current_window = tk.Toplevel(self)
@@ -92,6 +101,16 @@ class MultiWindowApp(tk.Tk):
             self.current_window.geometry(WINDOW_GEOMETRY)
             bg = tk.Label(self.current_window, image=bg_image)
             bg.place(relwidth=1, relheight=1)
+
+    def move_bar(self, event):
+        x = self.bar.winfo_x()
+        y = self.bar.winfo_y()
+        if event.keysym == 'Left':
+            x = max(20, x - 50)
+        elif event.keysym == 'Right':
+            x = min(WIDTH, x + 50)
+
+        self.bar.place(x=x, y=y)
 
 
 if __name__ == '__main__':
